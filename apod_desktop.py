@@ -23,9 +23,9 @@ import sys
 # Full paths of the image cache folder and database
 # - The image cache directory is a subdirectory of the specified parent directory.
 # - The image cache database is a sqlite database located in the image cache directory.
-script_dir = # SHOW CORRECT PATH HERE
-image_cache_dir = # SHOW CORRECT PATH HERE
-image_cache_db = # SHOW CORRECT PATH HERE
+script_dir = os.path.dirname(os.path.abspath(__file__))
+image_cache_dir = os.path.join(script_dir, 'ImageCacheDir')
+image_cache_db = os.path.join(image_cache_dir, 'NASA.db')
 
 def main():
     # Get the APOD date from the command line
@@ -64,7 +64,7 @@ def get_apod_date():
             sys.exit('Script execution aborted')
 
         # Validate that the date is within range
-        MIN_APOD_DATE = # Complete this
+        MIN_APOD_DATE = '1995-16-07'
         if apod_date < MIN_APOD_DATE:
             print(f'Error: Date too far in past; First APOD was on {MIN_APOD_DATE.isoformat()}')
             sys.exit('Script execution aborted')
@@ -73,7 +73,8 @@ def get_apod_date():
             sys.exit('Script execution aborted')
     else:
         # No date parameter has been provided, so use today's date
-        apod_date = # Fill in here
+        today = date.today()
+        apod_date = today.fromisoformat()
     
     return apod_date
 
@@ -86,7 +87,31 @@ def init_apod_cache():
     # You should know what to do here as demonstrated in previous labs
 
     # Create the DB if it does not already exist
-    #Complete this with the correct instructions
+    # Complete this with the correct instructions
+    if not image_cache_dir.exists():
+        os.makedirs(image_cache_dir, exist_ok=True)
+    
+    con = sqlite3.connect(image_cache_db)
+
+    cur = con.cursor()
+    create_image_tbl_querey = """
+        CREATE TABLE IF NOT EXISTS images
+        (
+            primary_key INTIGER PRIMARY KEY,
+            APOD_title  TEXT NOT NULL,
+            APOD_expl   TEXT NOT NULL,
+            PATH        TEXT NOT NULL,
+            HASH        TEXT NOT NULL
+
+        );
+        """
+    cur.execute(create_image_tbl_querey)
+
+    con.commit()
+    con.close()
+
+    return
+
 
 def add_apod_to_cache(apod_date):
     """Adds the APOD image from a specified date to the image cache.
